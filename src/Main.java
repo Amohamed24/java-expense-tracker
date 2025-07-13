@@ -9,52 +9,72 @@ public class Main {
     public static void main(String[] args) {
 
         // EXPENSE TRACKER
-        List<Expense> expenses = new ArrayList<>();
-        ExpenseTracker tracker = new ExpenseTracker();
 
-        System.out.println("Welcome to Expense Tracker! What's your name? :");
-        String name = scanner.nextLine();
-
-        if (name.equalsIgnoreCase("q")) {
-            System.out.println("Thanks for playing " + name);
-            return;
-        }
-
-        while (true) {
-            System.out.println("*******************************************************************************");
-            System.out.println("Select: 1) Create an expense or 2) View an expense (type 'q' to quit) :");
-            String input = scanner.nextLine();
-
-            if (input.equalsIgnoreCase("q")) {
-                break;
-            }
-
-            int action;
-            try {
-                action = Integer.parseInt(input);
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid. Please enter 1.");
-                continue;
-            }
-
-            if (action == 1) {
-                Expense expense = tracker.createAnExpense();
-                if (expense != null) {
-                    expenses.add(expense);
-                }
-            } else {
-                System.out.println("Invalid option.");
-            }
-        }
-
-        // Final summary
-        System.out.println("\n========== Expense Summary ==========");
-        for (Expense e : expenses) {
-            System.out.printf("%s (%s): $%.2f\n", e.getName(), e.getCategory(), e.getAmount());
-        }
-
-        System.out.println("Thanks for using Expense Tracker!");
+        AppController controller = new AppController();
+        controller.start();
         scanner.close();
+    }
+
+    static class AppController {
+        private final List<Expense> expenses = new ArrayList<>();
+        private final ExpenseTracker tracker = new ExpenseTracker();
+
+        void start() {
+            System.out.println("Welcome to Expense Tracker! What's your name? :");
+            String name = scanner.nextLine();
+
+            if (name.equalsIgnoreCase("q")) {
+                System.out.println("Thanks for playing " + name);
+            }
+
+            while (true) {
+                System.out.println("*******************************************************************************");
+                System.out.println("Select: 1) Create an expense or 2) View an expense (type 'q' to quit) :");
+                String input = scanner.nextLine();
+
+                if (input.equalsIgnoreCase("q")) {
+                    break;
+                }
+
+                int action;
+                try {
+                    action = Integer.parseInt(input);
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid. Please enter 1.");
+                    continue;
+                }
+
+                if (action == 1) {
+                    Expense expense = tracker.createAnExpense();
+                    if (expense != null) {
+                        expenses.add(expense);
+                    }
+                } else if (action == 2) {
+                    if (expenses.isEmpty()) {
+                        System.out.println("No expenses to view yet.");
+                    }
+
+                    Expense viewed = tracker.viewAnExpense(expenses);
+                    if (viewed != null) {
+                        System.out.printf("Found: %s (%s): $%.2f\n", viewed.getName(), viewed.getCategory(), viewed.getAmount());
+                    }
+                } else {
+                    System.out.println("Invalid option.");
+                }
+            }
+
+            printFinalSummary();
+        }
+
+        private void printFinalSummary() {
+
+            System.out.println("\n========== Expense Summary ==========");
+            for (Expense e : expenses) {
+                System.out.printf("%s (%s): $%.2f\n", e.getName(), e.getCategory(), e.getAmount());
+            }
+
+            System.out.println("Thanks for using Expense Tracker!");
+        }
     }
 
     static class Expense {
@@ -104,6 +124,20 @@ public class Main {
 
             System.out.println("Added: " + category + " - " + expenseName + ": $" + amount);
             return new Expense(expenseName, category, amount);
+        }
+
+        public Expense viewAnExpense(List<Expense> expenses) {
+            System.out.println("What expense are you looking for? :");
+            String viewExpenseName = scanner.nextLine();
+
+            for (Expense e : expenses) {
+                if (e.getName().equalsIgnoreCase(viewExpenseName)) {
+                    return e;
+                }
+            }
+
+            System.out.println("Expense is not found");
+            return null;
         }
     }
 }
